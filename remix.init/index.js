@@ -46,12 +46,12 @@ async function main({ rootDirectory }) {
 
   const answers = await inquirer.prompt([{
     name: "connectionString",
-    message: "Local database connection string (leave blank for default)",
+    message: "Local database connection string (leave blank for default):",
     type: "input"
   },
   {
     name: "shadowConnectionString",
-    message: "Database connection string for the shadow db",
+    message: "Database connection string for the shadow db:",
     type: "input",
     when: (answers) => answers.connectionString && answers.connectionString.indexOf('database.windows.net') >= 0
   }]);
@@ -63,7 +63,7 @@ async function main({ rootDirectory }) {
     )
   }
   if (answers.shadowConnectionString) {
-    newEnv += `${EOL}SHADOW_DATABASE_URL="${answers.shadowConnectionString}"`
+    newEnv += `SHADOW_DATABASE_URL="${answers.shadowConnectionString}${EOL}"`;
   }
 
   const newPackageJson =
