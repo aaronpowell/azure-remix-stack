@@ -73,10 +73,22 @@ async function main({ rootDirectory }) {
       2
     ) + "\n";
 
+  console.log(
+    `Updating template files with what you've told us`
+  );
+
   await Promise.all([
     fs.writeFile(README_PATH, newReadme),
     fs.writeFile(ENV_PATH, newEnv),
     fs.writeFile(PACKAGE_JSON_PATH, newPackageJson),
+  ]);
+
+  console.log(
+    `Removing temporary files from disk.`
+  );
+
+  await Promise.all([
+    fs.rm(path.join(rootDirectory, "LICENSE.md"))
   ]);
 
   console.log(
