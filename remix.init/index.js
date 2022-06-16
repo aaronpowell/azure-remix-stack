@@ -7,6 +7,8 @@ const { EOL } = require("os");
 
 const sort = require("sort-package-json");
 
+const setupEasyAuth = require("./setup-easy-auth");
+
 function escapeRegExp(string) {
   // $& means the whole matched string
   return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -65,6 +67,8 @@ async function main({ rootDirectory }) {
   if (answers.shadowConnectionString) {
     newEnv += `SHADOW_DATABASE_URL="${answers.shadowConnectionString}${EOL}"`;
   }
+
+  setupEasyAuth()
 
   const newPackageJson =
     JSON.stringify(
