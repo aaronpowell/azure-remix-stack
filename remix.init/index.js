@@ -68,7 +68,7 @@ async function main({ rootDirectory }) {
     newEnv += `SHADOW_DATABASE_URL="${answers.shadowConnectionString}${EOL}"`;
   }
 
-  setupEasyAuth()
+  await setupEasyAuth('81a77569-b654-4cae-8282-980ac9136597', 'westus2', 'remove-me', 'remove-me-2')
 
   const newPackageJson =
     JSON.stringify(
