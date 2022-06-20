@@ -39,7 +39,7 @@ async function setUpGitHubProvider(subscriptionId, location, resourceGroup, appN
     message: "Client Secret:",
     type: "input"
   }]);
-  console.log('you`ve entered clietn secret: ' + clientSecret)
+
   await execSync(`az account set --subscription ${subscriptionId}`)
   // az account set --subscription 81a77569-b654-4cae-8282-980ac9136597`
   await execSync(`az config set defaults.location=${location} defaults.group=${resourceGroup}`)
