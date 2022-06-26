@@ -68,7 +68,7 @@ async function main({ rootDirectory }) {
     newEnv += `SHADOW_DATABASE_URL="${answers.shadowConnectionString}${EOL}"`;
   }
 
-  await setupEasyAuth('81a77569-b654-4cae-8282-980ac9136597', 'westus2', 'remove-me', 'remove-me-2')
+  await setupEasyAuth({ subscriptionId: '81a77569-b654-4cae-8282-980ac9136597', location: 'westus2', resourceGroup: 'ExampleGroup3', appName: 'mychiptunestackappsite', url: 'https://mychiptunestackappsite.azurewebsites.net' })
 
   const newPackageJson =
     JSON.stringify(
