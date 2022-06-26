@@ -1,0 +1,21 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "SQL_SERVER_VULNERABILITYASSESSMENTS_DEFAULT_STORAGECONTAINERPATH": {
+            "value": "my-sql-server-vulnerabilityassessments-default-storagecontainerpath"
+        },
+        "WEB_SITE_NAME": {
+            "value": "my-app-site"
+        },
+        "SQL_SERVER_NAME": {
+            "value": "my-app-server"
+        },
+        "WEB_SERVERFARMS_NAME": {
+            "value": "my-app-serverfarm"
+        },
+        "CONTAINER_REGISTRIES_APP_NAME": {
+            "value": "my-container-registry"
+        }
+    }
+}

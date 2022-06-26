@@ -1,0 +1,892 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "SQL_SERVER_VULNERABILITYASSESSMENTS_DEFAULT_STORAGECONTAINERPATH": {
+            "type": "SecureString"
+        },
+        "SQL_SERVER_NAME": {
+            "defaultValue": "sql_servers_name",
+            "type": "String"
+        },
+        "SQL_SERVER_LOCATION": {
+            "defaultValue": "northeurope",
+            "type": "String"
+        },
+        "WEB_SITE_NAME": {
+            "defaultValue": "web_site_name",
+            "type": "String"
+        },
+        "WEB_SERVERFARMS_NAME": {
+            "defaultValue": "web_serverfarms_name",
+            "type": "String"
+        },
+        "WEB_SERVERFARMS_LOCATION": {
+            "defaultValue": "northeurope",
+            "type": "String"
+        },
+        "CONTAINER_REGISTRIES_APP_NAME": {
+            "defaultValue": "container_registry_name",
+            "type": "String"
+        },
+        "CONTAINER_IMAGE_NAME_AND_LABEL": {
+            "defaultValue": "container_image_name:label",
+            "type": "String"
+        },
+        "CONTAINER_REGISTRIES_LOCATION": {
+            "defaultValue": "northeurope",
+            "type": "String"
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "type": "Microsoft.ContainerRegistry/registries",
+            "apiVersion": "2022-02-01-preview",
+            "name": "[parameters('CONTAINER_REGISTRIES_APP_NAME')]",
+            "location": "[parameters('CONTAINER_REGISTRIES_LOCATION')]",
+            "sku": {
+                "name": "Basic",
+                "tier": "Basic"
+            },
+            "properties": {
+                "adminUserEnabled": true,
+                "policies": {
+                    "quarantinePolicy": {
+                        "status": "disabled"
+                    },
+                    "trustPolicy": {
+                        "type": "Notary",
+                        "status": "disabled"
+                    },
+                    "retentionPolicy": {
+                        "days": 7,
+                        "status": "disabled"
+                    },
+                    "exportPolicy": {
+                        "status": "enabled"
+                    },
+                    "azureADAuthenticationAsArmPolicy": {
+                        "status": "enabled"
+                    },
+                    "softDeletePolicy": {
+                        "retentionDays": 7,
+                        "status": "disabled"
+                    }
+                },
+                "encryption": {
+                    "status": "disabled"
+                },
+                "dataEndpointEnabled": false,
+                "publicNetworkAccess": "Enabled",
+                "networkRuleBypassOptions": "AzureServices",
+                "zoneRedundancy": "Disabled",
+                "anonymousPullEnabled": false
+            }
+        },
+        {
+            "type": "Microsoft.Sql/servers",
+            "apiVersion": "2021-11-01-preview",
+            "name": "[parameters('SQL_SERVER_NAME')]",
+            "location": "[parameters('SQL_SERVER_LOCATION')]",
+            "kind": "v12.0",
+            "properties": {
+                "administratorLogin": "[parameters('SQL_SERVER_NAME')]",
+                "version": "12.0",
+                "minimalTlsVersion": "1.2",
+                "publicNetworkAccess": "Enabled",
+                "restrictOutboundNetworkAccess": "Disabled"
+            }
+        },
+        {
+            "type": "Microsoft.Web/serverfarms",
+            "apiVersion": "2021-03-01",
+            "name": "[parameters('WEB_SERVERFARMS_NAME')]",
+            "location": "[parameters('WEB_SERVERFARMS_LOCATION')]",
+            "sku": {
+                "name": "F1",
+                "tier": "Free",
+                "size": "F1",
+                "family": "F",
+                "capacity": 1
+            },
+            "kind": "linux",
+            "properties": {
+                "perSiteScaling": false,
+                "elasticScaleEnabled": false,
+                "maximumElasticWorkerCount": 1,
+                "isSpot": false,
+                "reserved": true,
+                "isXenon": false,
+                "hyperV": false,
+                "targetWorkerCount": 0,
+                "targetWorkerSizeId": 0,
+                "zoneRedundant": false
+            }
+        },
+        {
+            "type": "Microsoft.Sql/servers/advancedThreatProtectionSettings",
+            "apiVersion": "2021-11-01-preview",
+            "name": "[concat(parameters('SQL_SERVER_NAME'), '/Default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers', parameters('SQL_SERVER_NAME'))]"
+            ],
+            "properties": {
+                "state": "Disabled"
+            }
+        },
+        {
+            "type": "Microsoft.Sql/servers/advisors",
+            "apiVersion": "2014-04-01",
+            "name": "[concat(parameters('SQL_SERVER_NAME'), '/CreateIndex')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers', parameters('SQL_SERVER_NAME'))]"
+            ],
+            "properties": {
+                "autoExecuteValue": "Disabled"
+            }
+        },
+        {
+            "type": "Microsoft.Sql/servers/advisors",
+            "apiVersion": "2014-04-01",
+            "name": "[concat(parameters('SQL_SERVER_NAME'), '/DbParameterization')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers', parameters('SQL_SERVER_NAME'))]"
+            ],
+            "properties": {
+                "autoExecuteValue": "Disabled"
+            }
+        },
+        {
+            "type": "Microsoft.Sql/servers/advisors",
+            "apiVersion": "2014-04-01",
+            "name": "[concat(parameters('SQL_SERVER_NAME'), '/DefragmentIndex')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers', parameters('SQL_SERVER_NAME'))]"
+            ],
+            "properties": {
+                "autoExecuteValue": "Disabled"
+            }
+        },
+        {
+            "type": "Microsoft.Sql/servers/advisors",
+            "apiVersion": "2014-04-01",
+            "name": "[concat(parameters('SQL_SERVER_NAME'), '/DropIndex')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers', parameters('SQL_SERVER_NAME'))]"
+            ],
+            "properties": {
+                "autoExecuteValue": "Disabled"
+            }
+        },
+        {
+            "type": "Microsoft.Sql/servers/advisors",
+            "apiVersion": "2014-04-01",
+            "name": "[concat(parameters('SQL_SERVER_NAME'), '/ForceLastGoodPlan')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers', parameters('SQL_SERVER_NAME'))]"
+            ],
+            "properties": {
+                "autoExecuteValue": "Enabled"
+            }
+        },
+        {
+            "type": "Microsoft.Sql/servers/auditingPolicies",
+            "apiVersion": "2014-04-01",
+            "name": "[concat(parameters('SQL_SERVER_NAME'), '/Default')]",
+            "location": "[parameters('SQL_SERVER_LOCATION')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers', parameters('SQL_SERVER_NAME'))]"
+            ],
+            "properties": {
+                "auditingState": "Disabled"
+            }
+        },
+        {
+            "type": "Microsoft.Sql/servers/auditingSettings",
+            "apiVersion": "2021-11-01-preview",
+            "name": "[concat(parameters('SQL_SERVER_NAME'), '/Default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers', parameters('SQL_SERVER_NAME'))]"
+            ],
+            "properties": {
+                "retentionDays": 0,
+                "auditActionsAndGroups": [],
+                "isStorageSecondaryKeyInUse": false,
+                "isAzureMonitorTargetEnabled": false,
+                "isManagedIdentityInUse": false,
+                "state": "Disabled",
+                "storageAccountSubscriptionId": "00000000-0000-0000-0000-000000000000"
+            }
+        },
+        {
+            "type": "Microsoft.Sql/servers/connectionPolicies",
+            "apiVersion": "2021-11-01-preview",
+            "name": "[concat(parameters('SQL_SERVER_NAME'), '/default')]",
+            "location": "[parameters('SQL_SERVER_LOCATION')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers', parameters('SQL_SERVER_NAME'))]"
+            ],
+            "properties": {
+                "connectionType": "Default"
+            }
+        },
+        {
+            "type": "Microsoft.Sql/servers/databases",
+            "apiVersion": "2021-11-01-preview",
+            "name": "[concat(parameters('SQL_SERVER_NAME'), '/', parameters('SQL_SERVER_NAME'))]",
+            "location": "[parameters('SQL_SERVER_LOCATION')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers', parameters('SQL_SERVER_NAME'))]"
+            ],
+            "sku": {
+                "name": "Standard",
+                "tier": "Standard",
+                "capacity": 10
+            },
+            "kind": "v12.0,user",
+            "properties": {
+                "collation": "SQL_Latin1_General_CP1_CI_AS",
+                "maxSizeBytes": 2147483648,
+                "catalogCollation": "SQL_Latin1_General_CP1_CI_AS",
+                "zoneRedundant": false,
+                "readScale": "Disabled",
+                "requestedBackupStorageRedundancy": "Local",
+                "maintenanceConfigurationId": "/subscriptions/81a77569-b654-4cae-8282-980ac9136597/providers/Microsoft.Maintenance/publicMaintenanceConfigurations/SQL_Default",
+                "isLedgerOn": false
+            }
+        },
+        {
+            "type": "Microsoft.Sql/servers/databases/advancedThreatProtectionSettings",
+            "apiVersion": "2021-11-01-preview",
+            "name": "[concat(parameters('SQL_SERVER_NAME'), '/master/Default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers', parameters('SQL_SERVER_NAME'))]"
+            ],
+            "properties": {
+                "state": "Disabled"
+            }
+        },
+        {
+            "type": "Microsoft.Sql/servers/databases/auditingPolicies",
+            "apiVersion": "2014-04-01",
+            "name": "[concat(parameters('SQL_SERVER_NAME'), '/master/Default')]",
+            "location": "[parameters('SQL_SERVER_LOCATION')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers', parameters('SQL_SERVER_NAME'))]"
+            ],
+            "properties": {
+                "auditingState": "Disabled"
+            }
+        },
+        {
+            "type": "Microsoft.Sql/servers/databases/auditingSettings",
+            "apiVersion": "2021-11-01-preview",
+            "name": "[concat(parameters('SQL_SERVER_NAME'), '/master/Default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers', parameters('SQL_SERVER_NAME'))]"
+            ],
+            "properties": {
+                "retentionDays": 0,
+                "isAzureMonitorTargetEnabled": false,
+                "state": "Disabled",
+                "storageAccountSubscriptionId": "00000000-0000-0000-0000-000000000000"
+            }
+        },
+        {
+            "type": "Microsoft.Sql/servers/databases/extendedAuditingSettings",
+            "apiVersion": "2021-11-01-preview",
+            "name": "[concat(parameters('SQL_SERVER_NAME'), '/master/Default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers', parameters('SQL_SERVER_NAME'))]"
+            ],
+            "properties": {
+                "retentionDays": 0,
+                "isAzureMonitorTargetEnabled": false,
+                "state": "Disabled",
+                "storageAccountSubscriptionId": "00000000-0000-0000-0000-000000000000"
+            }
+        },
+        {
+            "type": "Microsoft.Sql/servers/databases/geoBackupPolicies",
+            "apiVersion": "2014-04-01",
+            "name": "[concat(parameters('SQL_SERVER_NAME'), '/master/Default')]",
+            "location": "[parameters('SQL_SERVER_LOCATION')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers', parameters('SQL_SERVER_NAME'))]"
+            ],
+            "properties": {
+                "state": "Enabled"
+            }
+        },
+        {
+            "type": "Microsoft.Sql/servers/databases/ledgerDigestUploads",
+            "apiVersion": "2021-11-01-preview",
+            "name": "[concat(parameters('SQL_SERVER_NAME'), '/master/Current')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers', parameters('SQL_SERVER_NAME'))]"
+            ],
+            "properties": {}
+        },
+        {
+            "type": "Microsoft.Sql/servers/databases/securityAlertPolicies",
+            "apiVersion": "2021-11-01-preview",
+            "name": "[concat(parameters('SQL_SERVER_NAME'), '/master/Default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers', parameters('SQL_SERVER_NAME'))]"
+            ],
+            "properties": {
+                "state": "Disabled",
+                "disabledAlerts": [
+                    ""
+                ],
+                "emailAddresses": [
+                    ""
+                ],
+                "emailAccountAdmins": false,
+                "retentionDays": 0
+            }
+        },
+        {
+            "type": "Microsoft.Sql/servers/databases/transparentDataEncryption",
+            "apiVersion": "2021-11-01-preview",
+            "name": "[concat(parameters('SQL_SERVER_NAME'), '/master/Current')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers', parameters('SQL_SERVER_NAME'))]"
+            ],
+            "properties": {
+                "state": "Disabled"
+            }
+        },
+        {
+            "type": "Microsoft.Sql/servers/databases/vulnerabilityAssessments",
+            "apiVersion": "2021-11-01-preview",
+            "name": "[concat(parameters('SQL_SERVER_NAME'), '/master/Default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers', parameters('SQL_SERVER_NAME'))]"
+            ],
+            "properties": {
+                "recurringScans": {
+                    "isEnabled": false,
+                    "emailSubscriptionAdmins": true
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Sql/servers/devOpsAuditingSettings",
+            "apiVersion": "2021-11-01-preview",
+            "name": "[concat(parameters('SQL_SERVER_NAME'), '/Default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers', parameters('SQL_SERVER_NAME'))]"
+            ],
+            "properties": {
+                "isAzureMonitorTargetEnabled": false,
+                "state": "Disabled",
+                "storageAccountSubscriptionId": "00000000-0000-0000-0000-000000000000"
+            }
+        },
+        {
+            "type": "Microsoft.Sql/servers/encryptionProtector",
+            "apiVersion": "2021-11-01-preview",
+            "name": "[concat(parameters('SQL_SERVER_NAME'), '/current')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers', parameters('SQL_SERVER_NAME'))]"
+            ],
+            "kind": "servicemanaged",
+            "properties": {
+                "serverKeyName": "ServiceManaged",
+                "serverKeyType": "ServiceManaged",
+                "autoRotationEnabled": false
+            }
+        },
+        {
+            "type": "Microsoft.Sql/servers/extendedAuditingSettings",
+            "apiVersion": "2021-11-01-preview",
+            "name": "[concat(parameters('SQL_SERVER_NAME'), '/Default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers', parameters('SQL_SERVER_NAME'))]"
+            ],
+            "properties": {
+                "retentionDays": 0,
+                "auditActionsAndGroups": [],
+                "isStorageSecondaryKeyInUse": false,
+                "isAzureMonitorTargetEnabled": false,
+                "isManagedIdentityInUse": false,
+                "state": "Disabled",
+                "storageAccountSubscriptionId": "00000000-0000-0000-0000-000000000000"
+            }
+        },
+        {
+            "type": "Microsoft.Sql/servers/firewallRules",
+            "apiVersion": "2021-11-01-preview",
+            "name": "[concat(parameters('SQL_SERVER_NAME'), '/AllowAllWindowsAzureIps')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers', parameters('SQL_SERVER_NAME'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Sql/servers/firewallRules",
+            "apiVersion": "2021-11-01-preview",
+            "name": "[concat(parameters('SQL_SERVER_NAME'), '/ClientIp-2022-6-17_21-15-31')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers', parameters('SQL_SERVER_NAME'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Sql/servers/firewallRules",
+            "apiVersion": "2021-11-01-preview",
+            "name": "[concat(parameters('SQL_SERVER_NAME'), '/ClientIPAddress_2022-06-18_04:43:41')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers', parameters('SQL_SERVER_NAME'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Sql/servers/firewallRules",
+            "apiVersion": "2021-11-01-preview",
+            "name": "[concat(parameters('SQL_SERVER_NAME'), '/ClientIPAddress_2022-6-23_21-19-5')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers', parameters('SQL_SERVER_NAME'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Sql/servers/keys",
+            "apiVersion": "2021-11-01-preview",
+            "name": "[concat(parameters('SQL_SERVER_NAME'), '/ServiceManaged')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers', parameters('SQL_SERVER_NAME'))]"
+            ],
+            "kind": "servicemanaged",
+            "properties": {
+                "serverKeyType": "ServiceManaged"
+            }
+        },
+        {
+            "type": "Microsoft.Sql/servers/securityAlertPolicies",
+            "apiVersion": "2021-11-01-preview",
+            "name": "[concat(parameters('SQL_SERVER_NAME'), '/Default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers', parameters('SQL_SERVER_NAME'))]"
+            ],
+            "properties": {
+                "state": "Disabled",
+                "disabledAlerts": [
+                    ""
+                ],
+                "emailAddresses": [
+                    ""
+                ],
+                "emailAccountAdmins": false,
+                "retentionDays": 0
+            }
+        },
+        {
+            "type": "Microsoft.Sql/servers/vulnerabilityAssessments",
+            "apiVersion": "2021-11-01-preview",
+            "name": "[concat(parameters('SQL_SERVER_NAME'), '/Default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers', parameters('SQL_SERVER_NAME'))]"
+            ],
+            "properties": {
+                "recurringScans": {
+                    "isEnabled": false,
+                    "emailSubscriptionAdmins": true
+                },
+                "storageContainerPath": "[parameters('SQL_SERVER_VULNERABILITYASSESSMENTS_DEFAULT_STORAGECONTAINERPATH')]"
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites",
+            "apiVersion": "2021-03-01",
+            "name": "[parameters('WEB_SITE_NAME')]",
+            "location": "[parameters('WEB_SERVERFARMS_LOCATION')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/serverfarms', parameters('WEB_SERVERFARMS_NAME'))]"
+            ],
+            "kind": "app,linux,container",
+            "properties": {
+                "enabled": true,
+                "hostNameSslStates": [
+                    {
+                        "name": "[concat(parameters('WEB_SITE_NAME'), '.azurewebsites.net')]",
+                        "sslState": "Disabled",
+                        "hostType": "Standard"
+                    },
+                    {
+                        "name": "[concat(parameters('WEB_SITE_NAME'), '.scm.azurewebsites.net')]",
+                        "sslState": "Disabled",
+                        "hostType": "Repository"
+                    }
+                ],
+                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('WEB_SERVERFARMS_NAME'))]",
+                "reserved": true,
+                "isXenon": false,
+                "hyperV": false,
+                "siteConfig": {
+                    "numberOfWorkers": 1,
+                    "linuxFxVersion": "[concat('DOCKER|', parameters('WEB_SITE_NAME'), '.azurecr.io/', parameters('CONTAINER_IMAGE_NAME_AND_LABEL'))]",
+                    "acrUseManagedIdentityCreds": false,
+                    "alwaysOn": false,
+                    "http20Enabled": false,
+                    "functionAppScaleLimit": 0,
+                    "minimumElasticInstanceCount": 0
+                },
+                "scmSiteAlsoStopped": false,
+                "clientAffinityEnabled": false,
+                "clientCertEnabled": false,
+                "clientCertMode": "Required",
+                "hostNamesDisabled": false,
+                "customDomainVerificationId": "E0C295D19AB6889AD18601657C7E14F1A4B42DDD46F991EBC10675EDA29455CA",
+                "containerSize": 0,
+                "dailyMemoryTimeQuota": 0,
+                "httpsOnly": false,
+                "redundancyMode": "None",
+                "storageAccountRequired": false,
+                "keyVaultReferenceIdentity": "SystemAssigned"
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/basicPublishingCredentialsPolicies",
+            "apiVersion": "2021-03-01",
+            "name": "[concat(parameters('WEB_SITE_NAME'), '/ftp')]",
+            "location": "[parameters('WEB_SERVERFARMS_LOCATION')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('WEB_SITE_NAME'))]"
+            ],
+            "properties": {
+                "allow": true
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/basicPublishingCredentialsPolicies",
+            "apiVersion": "2021-03-01",
+            "name": "[concat(parameters('WEB_SITE_NAME'), '/scm')]",
+            "location": "[parameters('WEB_SERVERFARMS_LOCATION')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('WEB_SITE_NAME'))]"
+            ],
+            "properties": {
+                "allow": true
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/config",
+            "apiVersion": "2021-03-01",
+            "name": "[concat(parameters('WEB_SITE_NAME'), '/web')]",
+            "location": "[parameters('WEB_SERVERFARMS_LOCATION')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('WEB_SITE_NAME'))]"
+            ],
+            "properties": {
+                "numberOfWorkers": 1,
+                "defaultDocuments": [
+                    "Default.htm",
+                    "Default.html",
+                    "Default.asp",
+                    "index.htm",
+                    "index.html",
+                    "iisstart.htm",
+                    "default.aspx",
+                    "index.php",
+                    "hostingstart.html"
+                ],
+                "netFrameworkVersion": "v4.0",
+                "linuxFxVersion": "[concat('DOCKER|APP_NAME.azurecr.io/', parameters('CONTAINER_IMAGE_NAME_AND_LABEL'))]",
+                "requestTracingEnabled": false,
+                "remoteDebuggingEnabled": false,
+                "remoteDebuggingVersion": "VS2019",
+                "httpLoggingEnabled": false,
+                "acrUseManagedIdentityCreds": false,
+                "logsDirectorySizeLimit": 35,
+                "detailedErrorLoggingEnabled": false,
+                "publishingUsername": "$APP_NAME",
+                "scmType": "None",
+                "use32BitWorkerProcess": true,
+                "webSocketsEnabled": false,
+                "alwaysOn": false,
+                "managedPipelineMode": "Integrated",
+                "virtualApplications": [
+                    {
+                        "virtualPath": "/",
+                        "physicalPath": "site\\wwwroot",
+                        "preloadEnabled": false
+                    }
+                ],
+                "loadBalancing": "LeastRequests",
+                "experiments": {
+                    "rampUpRules": []
+                },
+                "autoHealEnabled": false,
+                "vnetRouteAllEnabled": false,
+                "vnetPrivatePortsCount": 0,
+                "localMySqlEnabled": false,
+                "ipSecurityRestrictions": [
+                    {
+                        "ipAddress": "Any",
+                        "action": "Allow",
+                        "priority": 1,
+                        "name": "Allow all",
+                        "description": "Allow all access"
+                    }
+                ],
+                "scmIpSecurityRestrictions": [
+                    {
+                        "ipAddress": "Any",
+                        "action": "Allow",
+                        "priority": 1,
+                        "name": "Allow all",
+                        "description": "Allow all access"
+                    }
+                ],
+                "scmIpSecurityRestrictionsUseMain": false,
+                "http20Enabled": false,
+                "minTlsVersion": "1.2",
+                "scmMinTlsVersion": "1.2",
+                "ftpsState": "AllAllowed",
+                "preWarmedInstanceCount": 0,
+                "functionAppScaleLimit": 0,
+                "functionsRuntimeScaleMonitoringEnabled": false,
+                "minimumElasticInstanceCount": 0,
+                "azureStorageAccounts": {}
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/hostNameBindings",
+            "apiVersion": "2021-03-01",
+            "name": "[concat(parameters('WEB_SITE_NAME'), '/', parameters('WEB_SITE_NAME'), '.azurewebsites.net')]",
+            "location": "[parameters('WEB_SERVERFARMS_LOCATION')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('WEB_SITE_NAME'))]"
+            ],
+            "properties": {
+                "siteName": "APP_NAME",
+                "hostNameType": "Verified"
+            }
+        },
+        {
+            "type": "Microsoft.Sql/servers/databases/advancedThreatProtectionSettings",
+            "apiVersion": "2021-11-01-preview",
+            "name": "[concat(parameters('SQL_SERVER_NAME'), '/', parameters('SQL_SERVER_NAME'), '/Default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers/databases', parameters('SQL_SERVER_NAME'), parameters('SQL_SERVER_NAME'))]",
+                "[resourceId('Microsoft.Sql/servers', parameters('SQL_SERVER_NAME'))]"
+            ],
+            "properties": {
+                "state": "Disabled"
+            }
+        },
+        {
+            "type": "Microsoft.Sql/servers/databases/workloadGroups",
+            "apiVersion": "2021-11-01-preview",
+            "name": "[concat(parameters('SQL_SERVER_NAME'), '/', parameters('SQL_SERVER_NAME'), '/Default')]",
+            "properties": {
+                "importance": "high",
+                "maxResourcePercent": 100,
+                "maxResourcePercentPerRequest": 50,
+                "minResourcePercent": 1,
+                "minResourcePercentPerRequest": 1,
+                "queryExecutionTimeout": 15
+            }
+        },
+        {
+            "type": "Microsoft.Sql/servers/databases/advisors",
+            "apiVersion": "2014-04-01",
+            "name": "[concat(parameters('SQL_SERVER_NAME'), '/', parameters('SQL_SERVER_NAME'), '/CreateIndex')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers/databases', parameters('SQL_SERVER_NAME'), parameters('SQL_SERVER_NAME'))]",
+                "[resourceId('Microsoft.Sql/servers', parameters('SQL_SERVER_NAME'))]"
+            ],
+            "properties": {
+                "autoExecuteValue": "Disabled"
+            }
+        },
+        {
+            "type": "Microsoft.Sql/servers/databases/advisors",
+            "apiVersion": "2014-04-01",
+            "name": "[concat(parameters('SQL_SERVER_NAME'), '/', parameters('SQL_SERVER_NAME'), '/DbParameterization')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers/databases', parameters('SQL_SERVER_NAME'), parameters('SQL_SERVER_NAME'))]",
+                "[resourceId('Microsoft.Sql/servers', parameters('SQL_SERVER_NAME'))]"
+            ],
+            "properties": {
+                "autoExecuteValue": "Disabled"
+            }
+        },
+        {
+            "type": "Microsoft.Sql/servers/databases/advisors",
+            "apiVersion": "2014-04-01",
+            "name": "[concat(parameters('SQL_SERVER_NAME'), '/', parameters('SQL_SERVER_NAME'), '/DefragmentIndex')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers/databases', parameters('SQL_SERVER_NAME'), parameters('SQL_SERVER_NAME'))]",
+                "[resourceId('Microsoft.Sql/servers', parameters('SQL_SERVER_NAME'))]"
+            ],
+            "properties": {
+                "autoExecuteValue": "Disabled"
+            }
+        },
+        {
+            "type": "Microsoft.Sql/servers/databases/advisors",
+            "apiVersion": "2014-04-01",
+            "name": "[concat(parameters('SQL_SERVER_NAME'), '/', parameters('SQL_SERVER_NAME'), '/DropIndex')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers/databases', parameters('SQL_SERVER_NAME'), parameters('SQL_SERVER_NAME'))]",
+                "[resourceId('Microsoft.Sql/servers', parameters('SQL_SERVER_NAME'))]"
+            ],
+            "properties": {
+                "autoExecuteValue": "Disabled"
+            }
+        },
+        {
+            "type": "Microsoft.Sql/servers/databases/advisors",
+            "apiVersion": "2014-04-01",
+            "name": "[concat(parameters('SQL_SERVER_NAME'), '/', parameters('SQL_SERVER_NAME'), '/ForceLastGoodPlan')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers/databases', parameters('SQL_SERVER_NAME'), parameters('SQL_SERVER_NAME'))]",
+                "[resourceId('Microsoft.Sql/servers', parameters('SQL_SERVER_NAME'))]"
+            ],
+            "properties": {
+                "autoExecuteValue": "Enabled"
+            }
+        },
+        {
+            "type": "Microsoft.Sql/servers/databases/auditingPolicies",
+            "apiVersion": "2014-04-01",
+            "name": "[concat(parameters('SQL_SERVER_NAME'), '/', parameters('SQL_SERVER_NAME'), '/Default')]",
+            "location": "[parameters('SQL_SERVER_LOCATION')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers/databases', parameters('SQL_SERVER_NAME'), parameters('SQL_SERVER_NAME'))]",
+                "[resourceId('Microsoft.Sql/servers', parameters('SQL_SERVER_NAME'))]"
+            ],
+            "properties": {
+                "auditingState": "Disabled"
+            }
+        },
+        {
+            "type": "Microsoft.Sql/servers/databases/auditingSettings",
+            "apiVersion": "2021-11-01-preview",
+            "name": "[concat(parameters('SQL_SERVER_NAME'), '/', parameters('SQL_SERVER_NAME'), '/Default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers/databases', parameters('SQL_SERVER_NAME'), parameters('SQL_SERVER_NAME'))]",
+                "[resourceId('Microsoft.Sql/servers', parameters('SQL_SERVER_NAME'))]"
+            ],
+            "properties": {
+                "retentionDays": 0,
+                "isAzureMonitorTargetEnabled": false,
+                "state": "Disabled",
+                "storageAccountSubscriptionId": "00000000-0000-0000-0000-000000000000"
+            }
+        },
+        {
+            "type": "Microsoft.Sql/servers/databases/backupLongTermRetentionPolicies",
+            "apiVersion": "2021-11-01-preview",
+            "name": "[concat(parameters('SQL_SERVER_NAME'), '/', parameters('SQL_SERVER_NAME'), '/default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers/databases', parameters('SQL_SERVER_NAME'), parameters('SQL_SERVER_NAME'))]",
+                "[resourceId('Microsoft.Sql/servers', parameters('SQL_SERVER_NAME'))]"
+            ],
+            "properties": {
+                "weeklyRetention": "PT0S",
+                "monthlyRetention": "PT0S",
+                "yearlyRetention": "PT0S",
+                "weekOfYear": 0
+            }
+        },
+        {
+            "type": "Microsoft.Sql/servers/databases/backupShortTermRetentionPolicies",
+            "apiVersion": "2021-11-01-preview",
+            "name": "[concat(parameters('SQL_SERVER_NAME'), '/', parameters('SQL_SERVER_NAME'), '/default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers/databases', parameters('SQL_SERVER_NAME'), parameters('SQL_SERVER_NAME'))]",
+                "[resourceId('Microsoft.Sql/servers', parameters('SQL_SERVER_NAME'))]"
+            ],
+            "properties": {
+                "retentionDays": 7,
+                "diffBackupIntervalInHours": 24
+            }
+        },
+        {
+            "type": "Microsoft.Sql/servers/databases/extendedAuditingSettings",
+            "apiVersion": "2021-11-01-preview",
+            "name": "[concat(parameters('SQL_SERVER_NAME'), '/', parameters('SQL_SERVER_NAME'), '/Default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers/databases', parameters('SQL_SERVER_NAME'), parameters('SQL_SERVER_NAME'))]",
+                "[resourceId('Microsoft.Sql/servers', parameters('SQL_SERVER_NAME'))]"
+            ],
+            "properties": {
+                "retentionDays": 0,
+                "isAzureMonitorTargetEnabled": false,
+                "state": "Disabled",
+                "storageAccountSubscriptionId": "00000000-0000-0000-0000-000000000000"
+            }
+        },
+        {
+            "type": "Microsoft.Sql/servers/databases/geoBackupPolicies",
+            "apiVersion": "2014-04-01",
+            "name": "[concat(parameters('SQL_SERVER_NAME'), '/', parameters('SQL_SERVER_NAME'), '/Default')]",
+            "location": "[parameters('SQL_SERVER_LOCATION')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers/databases', parameters('SQL_SERVER_NAME'), parameters('SQL_SERVER_NAME'))]",
+                "[resourceId('Microsoft.Sql/servers', parameters('SQL_SERVER_NAME'))]"
+            ],
+            "properties": {
+                "state": "Disabled"
+            }
+        },
+        {
+            "type": "Microsoft.Sql/servers/databases/ledgerDigestUploads",
+            "apiVersion": "2021-11-01-preview",
+            "name": "[concat(parameters('SQL_SERVER_NAME'), '/', parameters('SQL_SERVER_NAME'), '/Current')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers/databases', parameters('SQL_SERVER_NAME'), parameters('SQL_SERVER_NAME'))]",
+                "[resourceId('Microsoft.Sql/servers', parameters('SQL_SERVER_NAME'))]"
+            ],
+            "properties": {}
+        },
+        {
+            "type": "Microsoft.Sql/servers/databases/securityAlertPolicies",
+            "apiVersion": "2021-11-01-preview",
+            "name": "[concat(parameters('SQL_SERVER_NAME'), '/', parameters('SQL_SERVER_NAME'), '/Default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers/databases', parameters('SQL_SERVER_NAME'), parameters('SQL_SERVER_NAME'))]",
+                "[resourceId('Microsoft.Sql/servers', parameters('SQL_SERVER_NAME'))]"
+            ],
+            "properties": {
+                "state": "Disabled",
+                "disabledAlerts": [
+                    ""
+                ],
+                "emailAddresses": [
+                    ""
+                ],
+                "emailAccountAdmins": false,
+                "retentionDays": 0
+            }
+        },
+        {
+            "type": "Microsoft.Sql/servers/databases/transparentDataEncryption",
+            "apiVersion": "2021-11-01-preview",
+            "name": "[concat(parameters('SQL_SERVER_NAME'), '/', parameters('SQL_SERVER_NAME'), '/Current')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers/databases', parameters('SQL_SERVER_NAME'), parameters('SQL_SERVER_NAME'))]",
+                "[resourceId('Microsoft.Sql/servers', parameters('SQL_SERVER_NAME'))]"
+            ],
+            "properties": {
+                "state": "Enabled"
+            }
+        },
+        {
+            "type": "Microsoft.Sql/servers/databases/vulnerabilityAssessments",
+            "apiVersion": "2021-11-01-preview",
+            "name": "[concat(parameters('SQL_SERVER_NAME'), '/', parameters('SQL_SERVER_NAME'), '/Default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers/databases', parameters('SQL_SERVER_NAME'), parameters('SQL_SERVER_NAME'))]",
+                "[resourceId('Microsoft.Sql/servers', parameters('SQL_SERVER_NAME'))]"
+            ],
+            "properties": {
+                "recurringScans": {
+                    "isEnabled": false,
+                    "emailSubscriptionAdmins": true
+                }
+            }
+        }
+    ]
+}
