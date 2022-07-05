@@ -7,8 +7,9 @@ on:
   pull_request: {}
 
 env:
-  IMAGE_NAME: ${{ github.repository }}
+  IMAGE_NAME: APP_NAME
   NODE_VERSION: 16
+  AZURE_WEBAPP_NAME: APP_NAME
 
 jobs:
   lint:
