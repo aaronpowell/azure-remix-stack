@@ -45,15 +45,11 @@ async function main({ rootDirectory }) {
   );
 
   const answers = await inquirer.prompt([{
-    name: "connectionString",
-    message: "Local database connection string (leave blank for default):",
-    type: "input"
-  },
-  {
-    name: "shadowConnectionString",
-    message: "Database connection string for the shadow db:",
-    type: "input",
-    when: (answers) => answers.connectionString && answers.connectionString.indexOf('database.windows.net') >= 0
+    name: "dbType",
+    type: "list",
+    message: "What database server should we use?",
+    choices: ["devcontainer", "Local", "Azure"],
+    default: "devcontainer",
   }]);
 
   if (answers.connectionString) {
