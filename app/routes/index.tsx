@@ -8,9 +8,17 @@ export default function Index() {
       <div className="relative sm:pb-16 sm:pt-8">
         <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
           <div className="relative shadow-xl sm:overflow-hidden sm:rounded-2xl">
+            <div className="absolute inset-0">
+              <img
+                className="h-full w-full object-cover"
+                src="https://raw.githubusercontent.com/aaronpowell/azure-remix-stack/v2/docs/img/MSC17_nikkiHill_015.jpg"
+                alt="Sonic Youth On Stage"
+              />
+              <div className="absolute inset-0 bg-[color:rgba(254,204,27,0.5)] mix-blend-multiply" />
+            </div>
             <div className="lg:pb-18 relative px-4 pt-16 pb-8 sm:px-6 sm:pt-24 sm:pb-14 lg:px-8 lg:pt-32">
               <h1 className="text-center text-6xl font-extrabold tracking-tight sm:text-8xl lg:text-9xl">
-                <span className="block uppercase text-yellow-500 drop-shadow-md">
+                <span className="block uppercase text-blue-500 drop-shadow-md">
                   Azure Remix Stack
                 </span>
               </h1>
@@ -22,7 +30,7 @@ export default function Index() {
                 {user ? (
                   <Link
                     to="/notes"
-                    className="flex items-center justify-center rounded-md border border-transparent bg-white px-4 py-3 text-base font-medium text-yellow-700 shadow-sm hover:bg-yellow-50 sm:px-8"
+                    className="flex items-center justify-center rounded-md border border-transparent bg-white px-4 py-3 text-base font-medium text-blue-700 shadow-sm hover:bg-blue-50 sm:px-8"
                   >
                     View Notes for {user.email}
                   </Link>
@@ -30,13 +38,13 @@ export default function Index() {
                   <div className="space-y-4 sm:mx-auto sm:inline-grid sm:grid-cols-2 sm:gap-5 sm:space-y-0">
                     <Link
                       to="/join"
-                      className="flex items-center justify-center rounded-md border border-transparent bg-white px-4 py-3 text-base font-medium text-yellow-700 shadow-sm hover:bg-yellow-50 sm:px-8"
+                      className="flex items-center justify-center rounded-md border border-transparent bg-white px-4 py-3 text-base font-medium text-blue-700 shadow-sm hover:bg-blue-50 sm:px-8"
                     >
                       Sign up
                     </Link>
                     <Link
                       to="/login"
-                      className="flex items-center justify-center rounded-md bg-yellow-500 px-4 py-3 font-medium text-white hover:bg-yellow-600  "
+                      className="flex items-center justify-center rounded-md bg-blue-500 px-4 py-3 font-medium text-white hover:bg-blue-600  "
                     >
                       Log In
                     </Link>
@@ -58,12 +66,12 @@ export default function Index() {
           <div className="mt-6 flex flex-wrap justify-center gap-8">
             {[
               {
-                src: "",
+                src: "https://raw.githubusercontent.com/aaronpowell/azure-remix-stack/v2/docs/img/Azure-A-16px-product.svg",
                 alt: "Azure",
                 href: "https://azure.com",
               },
               {
-                src: "",
+                src: "https://raw.githubusercontent.com/aaronpowell/azure-remix-stack/v2/docs/img/10131-icon-Azure%20Database%20PostgreSQL%20Server-Databases.svg",
                 alt: "Azure Databases for PostgreSQL",
                 href: "https://azure.microsoft.com/products/postgresql/?WT.mc_id=javascript-0000-aapowell#overview",
               },
