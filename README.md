@@ -9,7 +9,7 @@ npx create-remix --template aaronpowell/azure-remix-stack
 ## What's in the stack
 
 - [Azure Web App for Containers](https://docs.microsoft.com/azure/app-service/quickstart-custom-container?tabs=dotnet&pivots=container-linux&WT.mc_id=javascript-61097-aapowell) with [Docker](https://www.docker.com/) and [Azure Container Registry](https://docs.microsoft.com/azure/container-registry/?WT.mc_id=javascript-61097-aapowell) for container management
-- Production-ready [Azure SQL database](https://azure.microsoft.com/products/azure-sql/managed-instance/?WT.mc_id=javascript-61097-aapowell#overview)
+- Production-ready [Azure Database for PostgreSQL](https://azure.microsoft.com/products/postgresql/?WT.mc_id=javascript-61097-aapowell#overview)
 - [GitHub Actions](https://github.com/features/actions) for deploy on merge to production and staging environments
 - Email/Password Authentication with [cookie-based sessions](https://remix.run/docs/en/v1/api/remix#createcookiesessionstorage)
 - Database ORM with [Prisma](https://prisma.io)
@@ -21,6 +21,7 @@ npx create-remix --template aaronpowell/azure-remix-stack
 - Linting with [ESLint](https://eslint.org)
 - Static Types with [TypeScript](https://typescriptlang.org)
 - VS Code [Remote Container definition](https://code.visualstudio.com/docs/remote/containers?WT.mc_id=javascript-61097-aapowell) for easy local dev setup
+- [Azure Developer CLI (azd)](https://learn.microsoft.com/azure/developer/azure-developer-cli/overview?WT.mc_id=javascript-61097-aapowell) to provision infrastructure
 
 _Note: you will need an Azure account to deploy this._
 
@@ -42,8 +43,44 @@ This starts your app in development mode, rebuilding assets on file changes.
 
 The database seed script creates a new user with some data you can use to get started:
 
-- Email: `rachel@remix.run`
-- Password: `rachelrox`
+- Email: `aaron.powell@microsoft.com`
+- Password: `AzureRocks!`
+
+## Deployment
+
+### Quick testing
+
+You can quickly spin up the infrastructure on Azure using `azd`.
+
+1. Initialize your Azure environment (enter a name for the environment, select a subscription and region to deploy to):
+
+   ```sh
+   azd init
+   ```
+
+1. Provision the resources in Azure
+
+   ```sh
+   azd provision
+   ```
+
+1. Deploy from local
+
+   ```sh
+   azd deploy
+   ```
+
+### Deploy with GitHub Actions or Azure Pipelines
+
+Once you're ready, you can get `azd` to scaffold up a GitHub Action workflow (or Azure Pipelines definition).
+
+1. Scaffold the workflow
+
+   ```sh
+   azd pipeline config
+   ```
+
+1. Commit the generated workflow and push
 
 ### Relevant code:
 
