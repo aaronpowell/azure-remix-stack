@@ -1,4 +1,4 @@
-import { Link } from "remix";
+import { Link } from "@remix-run/react";
 import { useOptionalUser } from "~/utils";
 
 export default function Index() {
@@ -64,8 +64,8 @@ export default function Index() {
               },
               {
                 src: "",
-                alt: "Azure SQL",
-                href: "https://azure.microsoft.com/products/azure-sql/managed-instance/?WT.mc_id=javascript-0000-aapowell#overview",
+                alt: "Azure Databases for PostgreSQL",
+                href: "https://azure.microsoft.com/products/postgresql/?WT.mc_id=javascript-0000-aapowell#overview",
               },
               {
                 src: "https://user-images.githubusercontent.com/1500684/157764484-ad64a21a-d7fb-47e3-8669-ec046da20c1f.svg",

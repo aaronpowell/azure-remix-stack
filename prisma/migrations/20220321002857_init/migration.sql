@@ -1,50 +1,39 @@
-BEGIN TRY
-
-BEGIN TRAN;
-
 -- CreateTable
-CREATE TABLE [dbo].[User] (
-    [id] INT NOT NULL IDENTITY(1,1),
-    [email] NVARCHAR(1000) NOT NULL,
-    [createdAt] DATETIME2 NOT NULL CONSTRAINT [User_createdAt_df] DEFAULT CURRENT_TIMESTAMP,
-    [updatedAt] DATETIME2 NOT NULL,
-    CONSTRAINT [User_pkey] PRIMARY KEY ([id]),
-    CONSTRAINT [User_email_key] UNIQUE ([email])
+CREATE TABLE "User" (
+    "id" SERIAL NOT NULL,
+    "email" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "User_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE [dbo].[Password] (
-    [hash] NVARCHAR(1000) NOT NULL,
-    [userId] INT NOT NULL,
-    CONSTRAINT [Password_userId_key] UNIQUE ([userId])
+CREATE TABLE "Password" (
+    "hash" TEXT NOT NULL,
+    "userId" INTEGER NOT NULL
 );
 
 -- CreateTable
-CREATE TABLE [dbo].[Note] (
-    [id] INT NOT NULL IDENTITY(1,1),
-    [title] NVARCHAR(1000) NOT NULL,
-    [body] NVARCHAR(1000) NOT NULL,
-    [createdAt] DATETIME2 NOT NULL CONSTRAINT [Note_createdAt_df] DEFAULT CURRENT_TIMESTAMP,
-    [updatedAt] DATETIME2 NOT NULL,
-    [userId] INT NOT NULL,
-    CONSTRAINT [Note_pkey] PRIMARY KEY ([id])
+CREATE TABLE "Note" (
+    "id" SERIAL NOT NULL,
+    "title" TEXT NOT NULL,
+    "body" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "userId" INTEGER NOT NULL,
+
+    CONSTRAINT "Note_pkey" PRIMARY KEY ("id")
 );
+
+-- CreateIndex
+CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Password_userId_key" ON "Password"("userId");
 
 -- AddForeignKey
-ALTER TABLE [dbo].[Password] ADD CONSTRAINT [Password_userId_fkey] FOREIGN KEY ([userId]) REFERENCES [dbo].[User]([id]) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "Password" ADD CONSTRAINT "Password_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE [dbo].[Note] ADD CONSTRAINT [Note_userId_fkey] FOREIGN KEY ([userId]) REFERENCES [dbo].[User]([id]) ON DELETE CASCADE ON UPDATE CASCADE;
-
-COMMIT TRAN;
-
-END TRY
-BEGIN CATCH
-
-IF @@TRANCOUNT > 0
-BEGIN
-    ROLLBACK TRAN;
-END;
-THROW
-
-END CATCH
+ALTER TABLE "Note" ADD CONSTRAINT "Note_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;

@@ -13,8 +13,6 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
-    ports:
-      - "5432:5432"
 
   app:
     build:
@@ -35,7 +33,7 @@ services:
     ports:
       - 3000:3000
     environment:
-      DATABASE_URL: postgresql://postgres:$AzureR0cks!@db:5432/remix
+      DATABASE_URL: 'postgresql://postgres:$AzureR0cks!@db:5432/remix'
     links:
       - db
 

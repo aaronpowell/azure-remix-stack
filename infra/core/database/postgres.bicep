@@ -7,14 +7,15 @@ param serverName string
 param serverEdition string = 'GeneralPurpose'
 param skuSizeGB int = 128
 param dbInstanceType string = 'Standard_D4ds_v4'
-param haMode string = 'ZoneRedundant'
+param haMode string = 'Disabled'
 param availabilityZone string = '1'
-param version string = '12'
+param version string = '13'
 param virtualNetworkExternalId string = ''
 param subnetName string = ''
 param privateDnsZoneArmResourceId string = ''
+param databaseName string
 
-resource serverName_resource 'Microsoft.DBforPostgreSQL/flexibleServers@2021-06-01' = {
+resource db 'Microsoft.DBforPostgreSQL/flexibleServers@2022-01-20-preview' = {
   name: serverName
   location: location
   sku: {
@@ -41,4 +42,11 @@ resource serverName_resource 'Microsoft.DBforPostgreSQL/flexibleServers@2021-06-
     }
     availabilityZone: availabilityZone
   }
+
+  resource database 'databases@2022-01-20-preview' = {
+    name: databaseName
+  }
 }
+
+output SERVER_HOST string = db.properties.fullyQualifiedDomainName
+output DB_NAME string = databaseName

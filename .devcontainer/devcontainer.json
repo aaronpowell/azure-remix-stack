@@ -13,8 +13,7 @@
         "EditorConfig.EditorConfig",
         "esbenp.prettier-vscode",
         "Prisma.prisma",
-        "ms-azuretools.azure-dev",
-        "ms-azuretools.vscode-azurecontainerapps",
+        "ms-vscode.vscode-node-azure-pack",
         "ms-azuretools.vscode-docker",
         "ms-azuretools.vscode-bicep"
       ]

@@ -4,6 +4,6 @@ name: azure-remix-stack
 services:
   web:
     language: ts
-    project: "./app"
+    project: "."
     module: app/web
     host: containerapp
