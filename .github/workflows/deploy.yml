@@ -98,6 +98,7 @@ jobs:
 
     env:
       DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/remix"
+      SESSION_SECRET: super-duper-s3cret
 
     steps:
       - name: 🛑 Cancel Previous Runs

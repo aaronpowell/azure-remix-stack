@@ -1,0 +1,6 @@
+{
+  "yaml.schemas": {
+    "file:///home/aaron/.vscode-server-insiders/extensions/docsmsft.docs-yaml-0.2.9/out/yaml-support/toc.schema.json": "/toc\\.yml/i",
+    "https://json.schemastore.org/github-workflow.json": "file:///home/aaron/code/github/azure-remix-stack/.github/workflows/deploy.yml"
+  }
+}
