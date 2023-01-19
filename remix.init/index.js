@@ -44,26 +44,60 @@ async function main({ rootDirectory }) {
     APP_NAME
   );
 
-  const answers = await inquirer.prompt([{
-    name: "connectionString",
-    message: "Local database connection string (leave blank for default):",
-    type: "input"
-  },
-  {
-    name: "shadowConnectionString",
-    message: "Database connection string for the shadow db:",
-    type: "input",
-    when: (answers) => answers.connectionString && answers.connectionString.indexOf('database.windows.net') >= 0
-  }]);
+  const answers = await inquirer.prompt([
+    {
+      name: "dbType",
+      type: "list",
+      message: "What database server should we use?",
+      choices: ["devcontainer", "Local", "Azure"],
+      default: "devcontainer",
+    },
+  ]);
 
-  if (answers.connectionString) {
-    newEnv = newEnv.replace(
-      /^DATABASE_URL=.*$/m,
-      `DATABASE_URL="${answers.connectionString}"`
-    )
+  let connectionString = "";
+  let shadowConnectionString = "";
+
+  switch (answers.dbType) {
+    case "devcontainer":
+      connectionString = "postgresql://postgres:$AzureR0cks!@db:5432/remix";
+      break;
+    case "Local":
+      const localAnswers = await inquirer.prompt([
+        {
+          name: "connStr",
+          type: "input",
+          message: "What is the connection string?",
+          default: "postgresql://postgres:postgres@localhost:5432/remix",
+        },
+      ]);
+      connectionString = localAnswers.connStr;
+      break;
+    case "Azure":
+      const azureAnswers = await inquirer.prompt([
+        {
+          name: "connStr",
+          type: "input",
+          message: "What is the connection string?",
+        },
+        {
+          name: "shadowConnectionString",
+          message: "Database connection string for the shadow db:",
+          type: "input",
+        },
+      ]);
+      connectionString = azureAnswers.connStr;
+      shadowConnectionString = azureAnswers.shadowConnectionString;
+      break;
+    default:
+      throw new Error("Unknown dbType");
   }
-  if (answers.shadowConnectionString) {
-    newEnv += `SHADOW_DATABASE_URL="${answers.shadowConnectionString}${EOL}"`;
+
+  newEnv = newEnv.replace(
+    /^DATABASE_URL=.*$/m,
+    `DATABASE_URL="${connectionString}"`
+  );
+  if (shadowConnectionString) {
+    newEnv += `${EOL}SHADOW_DATABASE_URL="${shadowConnectionString}"`;
   }
 
   const newPackageJson =
@@ -73,9 +107,7 @@ async function main({ rootDirectory }) {
       2
     ) + "\n";
 
-  console.log(
-    `Updating template files with what you've told us`
-  );
+  console.log(`Updating template files with what you've told us`);
 
   await Promise.all([
     fs.writeFile(README_PATH, newReadme),
@@ -83,20 +115,22 @@ async function main({ rootDirectory }) {
     fs.writeFile(PACKAGE_JSON_PATH, newPackageJson),
   ]);
 
-  console.log(
-    `Removing temporary files from disk.`
-  );
+  console.log(`Removing temporary files from disk.`);
 
-  await Promise.all([
-    fs.rm(path.join(rootDirectory, "LICENSE.md"))
-  ]);
+  await Promise.all([fs.rm(path.join(rootDirectory, "LICENSE.md"))]);
 
-  console.log(
-    `Running the setup script to make sure everything was set up properly`
-  );
-  execSync(`npm run setup`, { stdio: "inherit", cwd: rootDirectory });
+  if (answers.dbType === "devcontainer") {
+    console.log(
+      `Skipping the project setup until you open the devcontainer. Once done, "npm run setup" will execute on your behalf.`
+    );
+  } else {
+    console.log(
+      `Running the setup script to make sure everything was set up properly`
+    );
+    execSync(`npm run setup`, { stdio: "inherit", cwd: rootDirectory });
+  }
 
-  console.log(`✅  Project is ready! Start development with "npm run dev"`);
+  console.log(`✅ Project is ready! Start development with "npm run dev"`);
 }
 
 module.exports = main;

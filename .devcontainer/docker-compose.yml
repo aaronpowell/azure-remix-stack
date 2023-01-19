@@ -1,0 +1,43 @@
+version: '3'
+
+services:
+  db:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: '$AzureR0cks!'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        USER_UID: 1000
+        USER_GID: 1000
+        VARIANT: 16
+    init: true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker-host.sock
+      - ..:/workspace:cached
+    entrypoint: /usr/local/share/docker-init.sh
+    command: sleep infinity
+    depends_on:
+      - db
+    ports:
+      - 3000:3000
+    environment:
+      DATABASE_URL: 'postgresql://postgres:$AzureR0cks!@db:5432/remix'
+    links:
+      - db
+
+volumes:
+  pgdata:
+
+
