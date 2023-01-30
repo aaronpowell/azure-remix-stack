@@ -46,6 +46,14 @@ resource db 'Microsoft.DBforPostgreSQL/flexibleServers@2022-01-20-preview' = {
   resource database 'databases@2022-01-20-preview' = {
     name: databaseName
   }
+
+  resource SQLAllowAllWindowsAzureIps 'firewallRules' = {
+    name: 'AllowAllWindowsAzureIps'
+    properties: {
+      startIpAddress: '0.0.0.0'
+      endIpAddress: '0.0.0.0'
+    }
+  }
 }
 
 output SERVER_HOST string = db.properties.fullyQualifiedDomainName
