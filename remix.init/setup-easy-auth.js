@@ -34,8 +34,8 @@ async function setupEasyAuth(options) {
   console.log("Follow the instructions for creating an OAuth app on Google.")
   console.log("Instructions: https://developers.google.com/identity/protocols/oauth2/openid-connect")
   console.log("Enter below homepage URL and authorization callback URL when creating the app.")
-  console.log(`Homepage URL: ${url}`)
-  console.log(`Authorization callback URL: ${url}/.auth/login/google/callback`)
+  console.log(`Authorized JavaScript origins: ${url}`)
+  console.log(`Authorized redirect URIs: ${url}/.auth/login/google/callback`)
   const { clientId, clientSecret } = await inquirer.prompt([{
     name: "clientId",
     message: "Enter client ID:",
