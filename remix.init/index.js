@@ -7,6 +7,8 @@ const { EOL } = require("os");
 
 const sort = require("sort-package-json");
 
+const setupEasyAuth = require("./setup-easy-auth");
+
 function escapeRegExp(string) {
   // $& means the whole matched string
   return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -65,6 +67,18 @@ async function main({ rootDirectory }) {
   if (answers.shadowConnectionString) {
     newEnv += `SHADOW_DATABASE_URL="${answers.shadowConnectionString}${EOL}"`;
   }
+
+  // Check if user wants to add authentication
+  const answer = await inquirer.prompt({
+    name: "provider",
+    message: "Add Google as authentication provider?",
+    type: "confirm",
+    default: true
+  });
+
+  // If user didn't want to add authentication, do not continue
+  if (answer.provider)
+    await setupEasyAuth({ subscriptionId: '81a77569-b654-4cae-8282-980ac9136597', location: 'westus2', resourceGroup: 'chip3stackte', appName: 'chip3stackte', url: 'https://chip3stackte.azurewebsites.net' })
 
   const newPackageJson =
     JSON.stringify(
