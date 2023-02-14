@@ -112,7 +112,7 @@ async function main({ rootDirectory }) {
 
   // If user didn't want to add authentication, do not continue
   if (answer.provider)
-    await setupEasyAuth({ subscriptionId: '81a77569-b654-4cae-8282-980ac9136597', location: 'westus2', resourceGroup: 'chip3stackte', appName: 'chip3stackte', url: 'https://chip3stackte.azurewebsites.net' })
+    await setupEasyAuth({ subscriptionId: '81a77569-b654-4cae-8282-980ac9136597', location: 'westus2', resourceGroup: 'maxpajtest4', appName: 'maxpajtest4', url: 'https://maxpajtest4.azurewebsites.net' })
 
   const newPackageJson =
     JSON.stringify(
