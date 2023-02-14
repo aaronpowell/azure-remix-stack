@@ -4,6 +4,16 @@ const { execSync } = require('child_process');
 async function setupEasyAuth(options) {
   const { subscriptionId, location, resourceGroup, appName, url } = options
 
+  // Check for necessary commands exists
+  try {
+    await execSync(`hash az`, { stdio: 'pipe' })
+  } catch (error) {
+    console.log(`Please install Azure CLI (https://learn.microsoft.com/en-us/cli/azure/install-azure-cli) and rerun the command.`)
+
+    // Terminate setup process
+    process.exit(0)
+  }
+
   const extensionList = JSON.parse(await execSync(`az extension list`))
   const authV2Installed = extensionList.some(e => e.name === 'authV2')
 
