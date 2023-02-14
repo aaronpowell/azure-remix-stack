@@ -1,0 +1,39 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "value": "${AZURE_LOCATION}"
+    },
+    "name": {
+      "value": "${SERVICE_WEB_NAME}"
+    },
+    "imageName": {
+      "value": "${SERVICE_WEB_IMAGE_NAME}"
+    },
+    "applicationInsightsName": {
+      "value": "${APPLICATIONINSIGHTS_NAME}"
+    },
+    "containerAppsEnvironmentName": {
+      "value": "${AZURE_CONTAINER_ENVIRONMENT_NAME}"
+    },
+    "containerRegistryName": {
+      "value": "${AZURE_CONTAINER_REGISTRY_NAME}"
+    },
+    "databaseServerHost": {
+      "value": "${AZURE_DATABASE_SERVER_HOST}"
+    },
+    "databaseName": {
+      "value": "${AZURE_DATABASE_NAME}"
+    },
+    "databaseUsername": {
+      "value": "${AZURE_DATABASE_USERNAME}"
+    },
+    "databasePassword": {
+      "value": "$(secretOrRandomPassword)"
+    },
+    "sessionSecret": {
+      "value": "$(secretOrRandomPassword)"
+    }
+  }
+}
