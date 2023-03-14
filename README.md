@@ -3,7 +3,7 @@
 A [Remix Stacks](https://remix.run/stacks) template for deploying to Azure. This is based off the [Indie Stack](https://github.com/remix-run/indie-stack) template, but adapted for Azure.
 
 ```
-npx create-remix --template aaronpowell/azure-remix-stack
+npx create-remix --template frimjo/chiptune-stack
 ```
 
 ## What's in the stack
