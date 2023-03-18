@@ -34,6 +34,10 @@ resource app 'Microsoft.App/containerApps@2022-03-01' = {
       }
       secrets: [
         {
+          name: 'google-client-secret'
+          value: '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'
+        }
+        {
           name: 'registry-password'
           value: containerRegistry.listCredentials().passwords[0].value
         }
@@ -58,6 +62,52 @@ resource app 'Microsoft.App/containerApps@2022-03-01' = {
           }
         }
       ]
+    }
+  }
+}
+
+// Configuration
+resource authSettings 'Microsoft.App/containerApps/authConfigs@2022-10-01' = {
+  name: 'current'
+  parent: app
+  properties: {
+    globalValidation: {
+      excludedPaths: []
+      redirectToProvider: 'google'
+      unauthenticatedClientAction: 'RedirectToLoginPage'
+    }
+    httpSettings: {
+      requireHttps: true
+      routes: {
+        apiPrefix: ''
+      }
+    }
+    identityProviders: {
+      google: {
+        enabled: true
+        login: {
+          scopes: []
+        }
+        registration: {
+          clientId: '207547541555-ncl2atcvg7tge9deg9kag6es07okeuvp.apps.googleusercontent.com'
+          clientSecretSettingName: 'google-client-secret'
+        }
+        validation: {
+          allowedAudiences: []
+        }
+      }
+    }
+    login: {
+      allowedExternalRedirectUrls: []
+      cookieExpiration: {
+        convention: 'IdentityProviderDerived'
+      }
+      routes: {
+        logoutEndpoint: '/.auth/logout'
+      }
+    }
+    platform: {
+      enabled: true
     }
   }
 }
