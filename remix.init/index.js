@@ -8,6 +8,7 @@ const { EOL } = require("os");
 const sort = require("sort-package-json");
 
 const setupEasyAuth = require("./setup-easy-auth");
+const setupGitRepository = require("./setup-git-repository");
 
 function escapeRegExp(string) {
   // $& means the whole matched string
@@ -102,6 +103,7 @@ async function main({ rootDirectory }) {
     newEnv += `${EOL}SHADOW_DATABASE_URL="${shadowConnectionString}"`;
   }
 
+  await setupGitRepository({ appName: 'maxpajtest4' })
 
   const newPackageJson =
     JSON.stringify(
