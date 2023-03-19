@@ -7,7 +7,6 @@ const { EOL } = require("os");
 
 const sort = require("sort-package-json");
 
-const setupEasyAuth = require("./setup-easy-auth");
 const setupGitRepository = require("./setup-git-repository");
 
 function escapeRegExp(string) {
