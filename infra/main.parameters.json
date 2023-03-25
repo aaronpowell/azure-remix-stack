@@ -3,19 +3,25 @@
   "contentVersion": "1.0.0.0",
   "parameters": {
     "environmentName": {
-      "value": "${AZURE_ENV_NAME}"
+      "value": "${APP_NAME_WITH_HASH}"
     },
     "location": {
       "value": "${AZURE_LOCATION}"
+    },
+    "webContainerAppName": {
+      "value": "${WEB_CONTAINER_APP_NAME}"
     },
     "webImageName": {
       "value": "${SERVICE_WEB_IMAGE_NAME}"
     },
     "databasePassword": {
-      "value": "$(secretOrRandomPassword)"
+      "value": "${DB_SERVER_PASSWORD}"
+    },
+    "databaseUsername": {
+      "value": "${DB_SERVER_USERNAME}"
     },
     "sessionSecret": {
-      "value": "$(secretOrRandomPassword)"
+      "value": "${SESSION_SECRET}"
     }
   }
 }

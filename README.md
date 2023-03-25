@@ -96,7 +96,7 @@ This Remix Stack comes with two GitHub Actions that handle automatically deployi
 
 Before running a deployment, you'll need to provision the [Azure Container Registry](https://docs.microsoft.com/azure/container-registry/?WT.mc_id=javascript-61097-aapowell) and [Azure WebApp for Conitainers](https://docs.microsoft.com/azure/app-service/quickstart-custom-container?tabs=dotnet&pivots=container-linux&WT.mc_id=javascript-61097-aapowell) instances, as well as an [Azure SQL](https://docs.microsoft.com/azure/azure-sql/database/single-database-create-quickstart?tabs=azure-portal&WT.mc_id=javascript-61097-aapowell) database.
 
-_Note: Ensure that the Azure SQL database connection is configured in [app settings](https://docs.microsoft.com/azure/app-service/configure-common?tabs=portal&WT.mc_id=javascript-61097-aapowell) as `DATABASE_URL` for the app to access it._
+_Note: Ensure that the Azure SQL database connection is configured in [app settings](https://docs.microsoft.com/azure/app-service/configure-common?tabs=portal&WT.mc_id=javascript-61097-aapowell) as `DATABASE_CONNECTION_STRING` for the app to access it._
 
 ## GitHub Actions
 
@@ -106,8 +106,8 @@ We use GitHub Actions for continuous integration and deployment. Anything that g
 
 GitHub Actions will need the following secret variables to run:
 
-- `DATABASE_URL`: Connection info for a database to run the Cypress tests again
-- `AZURE_RESGISTRY_URL`: URL of the Azure Container Registry
+- `DATABASE_CONNECTION_STRING`: Connection info for a database to run the Cypress tests again
+- `AZURE_REGISTRY_URL`: URL of the Azure Container Registry
 - `AZURE_REGISTRY_USERNAME`: Username to authenticate against Azure Container Registry
 - `AZURE_REGISTRY_PASSWORD`: Password to authenticate against Azure Container Registry
 - `AZURE_CLIENT_ID`: Client ID to authenticate against

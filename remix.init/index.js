@@ -1,13 +1,29 @@
 const { execSync } = require("child_process");
 const crypto = require("crypto");
-const fs = require("fs/promises");
+const fs = require("fs");
 const path = require("path");
 const inquirer = require("inquirer");
 const { EOL } = require("os");
-
 const sort = require("sort-package-json");
 
 const setupGitRepository = require("./setup-git-repository");
+
+const debugMode = true;
+
+function debug(...str) {
+  if (debugMode) {
+    console.log(...str);
+  }
+}
+
+function terminal(str, args = {}) {
+  const result = execSync(str, { encoding: "utf8", ...args }).toString();
+  try {
+    return JSON.parse(result);
+  } catch (e) {
+    return result;
+  }
+}
 
 function escapeRegExp(string) {
   // $& means the whole matched string
@@ -18,123 +34,226 @@ function getRandomString(length) {
   return crypto.randomBytes(length).toString("hex");
 }
 
-async function main({ rootDirectory }) {
-  const README_PATH = path.join(rootDirectory, "README.md");
-  const EXAMPLE_ENV_PATH = path.join(rootDirectory, ".env.example");
-  const ENV_PATH = path.join(rootDirectory, ".env");
-  const PACKAGE_JSON_PATH = path.join(rootDirectory, "package.json");
+function getRandomPassword(
+  length = 20,
+  wishlist = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!@#$%^&*()+_-=}{[]|:;"/?.><,`~'
+) {
+  return Array.from(crypto.randomBytes(length))
+    .map((x) => wishlist[x % wishlist.length])
+    .join("");
+}
 
-  const REPLACER = "azure-remix-stack-template";
+async function setupGithubWorkflow(
+  environmentName,
+  subscriptionId,
+  azureLocation
+) {
+  await inquirer.prompt({
+    message: `Set up a repository on GitHub and add the following configuration to your repository Github Actions secrets \n ${JSON.stringify(
+      {
+        AZURE_ENV_NAME: environmentName,
+        AZURE_LOCATION: azureLocation,
+        AZURE_SUBSCRIPTION_ID: subscriptionId,
+      },
+      null,
+      2
+    )}`,
+    type: "confirm",
+  });
+}
 
-  const DIR_NAME = path.basename(rootDirectory);
-  const SUFFIX = getRandomString(2);
-  const APP_NAME = DIR_NAME + "-" + SUFFIX;
+function setupPackageJson(appName, rootDirectory) {
+  const packageJsonPath = path.join(rootDirectory, "package.json");
+  const packageJson = fs.readFileSync(packageJsonPath, "utf8");
+  const newPackageJson =
+    JSON.stringify(
+      sort({ ...JSON.parse(packageJson), name: appName }),
+      null,
+      2
+    ) + "\n";
 
-  const [readme, env, packageJson] = await Promise.all([
-    fs.readFile(README_PATH, "utf-8"),
-    fs.readFile(EXAMPLE_ENV_PATH, "utf-8"),
-    fs.readFile(PACKAGE_JSON_PATH, "utf-8"),
-  ]);
+  fs.writeFileSync(packageJsonPath, newPackageJson);
+}
+
+function setupEnvironmentFile(databaseConnectionStrings, rootDirectory) {
+  const exampleEnvPath = path.join(rootDirectory, ".env.example");
+  const envPath = path.join(rootDirectory, ".env");
+  const env = fs.readFileSync(exampleEnvPath, "utf8");
 
   let newEnv = env.replace(
     /^SESSION_SECRET=.*$/m,
     `SESSION_SECRET="${getRandomString(16)}"`
   );
 
-  const newReadme = readme.replace(
-    new RegExp(escapeRegExp(REPLACER), "g"),
-    APP_NAME
+  newEnv = newEnv.replace(
+    /^DATABASE_URL=.*$/m,
+    `DATABASE_URL="${databaseConnectionStrings.connectionString}"`
   );
 
+  if (databaseConnectionStrings.shadowConnectionString) {
+    newEnv += `${EOL}SHADOW_DATABASE_URL="${databaseConnectionStrings.shadowConnectionString}"`;
+  }
+
+  fs.writeFileSync(envPath, newEnv);
+}
+
+function setupReadme(appName, rootDirectory) {
+  const readmePath = path.join(rootDirectory, "README.md");
+  const readme = fs.readFileSync(readmePath, "utf8");
+  const newReadme = readme.replace(
+    new RegExp(escapeRegExp("chiptune-stack-template"), "g"),
+    appName
+  );
+
+  fs.writeFileSync(readmePath, newReadme);
+}
+
+async function setupDatabase(deploymentOutputs) {
   const answers = await inquirer.prompt([
     {
       name: "dbType",
       type: "list",
       message: "What database server should we use?",
       choices: ["devcontainer", "Local", "Azure"],
-      default: "devcontainer",
+      default: "Local",
     },
   ]);
 
-  let connectionString = "";
-  let shadowConnectionString = "";
-
   switch (answers.dbType) {
     case "devcontainer":
-      connectionString = "postgresql://postgres:$AzureR0cks!@db:5432/remix";
-      break;
+      return {
+        database: "devcontainer",
+        connectionString: "postgresql://postgres:$AzureR0cks!@db:5432/remix",
+        shadowConnectionString: null,
+      };
     case "Local":
       const localAnswers = await inquirer.prompt([
         {
-          name: "connStr",
+          name: "connectionString",
           type: "input",
           message: "What is the connection string?",
           default: "postgresql://postgres:postgres@localhost:5432/remix",
         },
       ]);
-      connectionString = localAnswers.connStr;
-      break;
+
+      return {
+        database: "local",
+        connectionString: localAnswers.connectionString,
+        shadowConnectionString: null,
+      };
     case "Azure":
-      const azureAnswers = await inquirer.prompt([
-        {
-          name: "connStr",
-          type: "input",
-          message: "What is the connection string?",
-        },
-        {
-          name: "shadowConnectionString",
-          message: "Database connection string for the shadow db:",
-          type: "input",
-        },
-      ]);
-      connectionString = azureAnswers.connStr;
-      shadowConnectionString = azureAnswers.shadowConnectionString;
-      break;
+      return {
+        database: "azure",
+        connectionString: deploymentOutputs.AZURE_DATABASE_SERVER_HOST,
+        shadowConnectionString: deploymentOutputs.AZURE_DATABASE_SERVER_HOST,
+      };
     default:
       throw new Error("Unknown dbType");
   }
+}
 
-  newEnv = newEnv.replace(
-    /^DATABASE_URL=.*$/m,
-    `DATABASE_URL="${connectionString}"`
+async function setupAzureResources(appName, rootDirectory) {
+  const azureSubscriptions = terminal(`az login`);
+
+  debug("Azure login success!");
+
+  const dbServerPassword = getRandomPassword();
+  const dbServerUsername = appName;
+
+  const subscriptionId = azureSubscriptions[0].id;
+  const tenantId = azureSubscriptions[0].tenantId;
+
+  const sessionSecret = getRandomString(16);
+
+  const location = "northeurope";
+
+  const deploymentParametersSearchReplace = [
+    { search: "location", replace: location },
+    { search: "environmentName", replace: appName },
+    { search: "webContainerAppName", replace: appName },
+    { search: "databasePassword", replace: dbServerPassword },
+    { search: "databaseUsername", replace: dbServerUsername },
+    { search: "sessionSecret", replace: sessionSecret },
+    { search: "webImageName", replace: "nginx:latest" },
+  ];
+
+  const parametersFilePath = `${rootDirectory}/infra/main.parameters.json`;
+
+  const parametersJSONFile = JSON.parse(
+    fs.readFileSync(parametersFilePath, "utf8")
   );
-  if (shadowConnectionString) {
-    newEnv += `${EOL}SHADOW_DATABASE_URL="${shadowConnectionString}"`;
-  }
 
-  await setupGitRepository({ appName: 'maxpajtest4' })
+  deploymentParametersSearchReplace.forEach((parameter) => {
+    parametersJSONFile.parameters[parameter.search].value = parameter.replace;
+  });
 
-  const newPackageJson =
-    JSON.stringify(
-      sort({ ...JSON.parse(packageJson), name: APP_NAME }),
-      null,
-      2
-    ) + "\n";
+  fs.writeFileSync(
+    parametersFilePath,
+    JSON.stringify(parametersJSONFile, null, 2)
+  );
 
-  console.log(`Updating template files with what you've told us`);
+  debug("Inititalizing and deploying, hold on...");
 
-  await Promise.all([
-    fs.writeFile(README_PATH, newReadme),
-    fs.writeFile(ENV_PATH, newEnv),
-    fs.writeFile(PACKAGE_JSON_PATH, newPackageJson),
-  ]);
+  terminal(
+    `azd init --cwd ${rootDirectory} --environment ${appName} --subscription ${subscriptionId} --location ${location}`
+  );
 
-  console.log(`Removing temporary files from disk.`);
+  const deployment = terminal(
+    `azd provision --cwd ${rootDirectory} --output json`
+  );
+
+  debug("Success!", deployment);
+
+  return {
+    tenantId,
+    subscriptionId,
+    deploymentOutputs: deployment.outputs,
+    location,
+  };
+}
+
+async function main({ rootDirectory, ...rest }) {
+  const dirName = path.basename(rootDirectory);
+  const appName = dirName.replace(/-/g, "").slice(0, 6) + getRandomString(6);
+
+  debug(`Start creating Remix app with name`, appName, `in`, rootDirectory);
+
+  const { subscriptionId, deploymentOutputs, location } =
+    await setupAzureResources(appName, rootDirectory);
+
+  const { database } = await setupDatabase(deploymentOutputs);
+
+  await setupGithubWorkflow(appName, subscriptionId, location);
+
+  setupReadme(appName, rootDirectory);
+
+  setupEnvironmentFile(
+    deploymentOutputs.AZURE_DATABASE_SERVER_HOST,
+    rootDirectory
+  );
+
+  setupPackageJson(appName, rootDirectory);
+
+  await setupGitRepository({ appName: "maxpajtest4" });
 
   await Promise.all([fs.rm(path.join(rootDirectory, "LICENSE.md"))]);
 
-  if (answers.dbType === "devcontainer") {
-    console.log(
+  debug(
+    `Now commit and push your code to your Github repository and check that the Github Action completes.`
+  );
+
+  if (database === "devcontainer") {
+    debug(
       `Skipping the project setup until you open the devcontainer. Once done, "npm run setup" will execute on your behalf.`
     );
   } else {
-    console.log(
+    debug(
       `Running the setup script to make sure everything was set up properly`
     );
-    execSync(`npm run setup`, { stdio: "inherit", cwd: rootDirectory });
+    terminal(`npm run setup`, { stdio: "inherit", cwd: rootDirectory });
   }
 
-  console.log(`✅ Project is ready! Start development with "npm run dev"`);
+  debug(`✅ Project is ready! Start development with "npm run dev"`);
 }
 
 module.exports = main;
