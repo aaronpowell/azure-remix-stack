@@ -72,7 +72,7 @@ resource authSettings 'Microsoft.App/containerApps/authConfigs@2022-10-01' = {
   parent: app
   properties: {
     globalValidation: {
-      excludedPaths: []
+      excludedPaths: [ '/', '/join', '/login' ]
       redirectToProvider: 'google'
       unauthenticatedClientAction: 'RedirectToLoginPage'
     }
@@ -103,7 +103,7 @@ resource authSettings 'Microsoft.App/containerApps/authConfigs@2022-10-01' = {
         convention: 'IdentityProviderDerived'
       }
       routes: {
-        logoutEndpoint: '/.auth/logout'
+        logoutEndpoint: '/logout'
       }
     }
     platform: {
