@@ -9,17 +9,12 @@ export default function Index() {
         <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
           <div className="relative shadow-xl sm:overflow-hidden sm:rounded-2xl">
             <div className="absolute inset-0">
-              <img
-                className="h-full w-full object-cover"
-                src="https://raw.githubusercontent.com/aaronpowell/azure-remix-stack/v2/docs/img/MSC17_nikkiHill_015.jpg"
-                alt="Sonic Youth On Stage"
-              />
               <div className="absolute inset-0 bg-[color:rgba(254,204,27,0.5)] mix-blend-multiply" />
             </div>
             <div className="lg:pb-18 relative px-4 pt-16 pb-8 sm:px-6 sm:pt-24 sm:pb-14 lg:px-8 lg:pt-32">
               <h1 className="text-center text-6xl font-extrabold tracking-tight sm:text-8xl lg:text-9xl">
                 <span className="block uppercase text-blue-500 drop-shadow-md">
-                  Azure Remix Stack
+                  Remix Stack
                 </span>
               </h1>
               <p className="mx-auto mt-6 max-w-lg text-center text-xl text-white sm:max-w-3xl">
@@ -65,16 +60,6 @@ export default function Index() {
         <div className="mx-auto max-w-7xl py-2 px-4 sm:px-6 lg:px-8">
           <div className="mt-6 flex flex-wrap justify-center gap-8">
             {[
-              {
-                src: "https://raw.githubusercontent.com/aaronpowell/azure-remix-stack/v2/docs/img/Azure-A-16px-product.svg",
-                alt: "Azure",
-                href: "https://azure.com",
-              },
-              {
-                src: "https://raw.githubusercontent.com/aaronpowell/azure-remix-stack/v2/docs/img/10131-icon-Azure%20Database%20PostgreSQL%20Server-Databases.svg",
-                alt: "Azure Databases for PostgreSQL",
-                href: "https://azure.microsoft.com/products/postgresql/?WT.mc_id=javascript-0000-aapowell#overview",
-              },
               {
                 src: "https://user-images.githubusercontent.com/1500684/157764484-ad64a21a-d7fb-47e3-8669-ec046da20c1f.svg",
                 alt: "Prisma",
